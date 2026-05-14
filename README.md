@@ -4,7 +4,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://www.docker.com/)
 
-A production-ready Network Intrusion Detection System powered by Machine Learning for real-time threat detection and automated response.
+Network Intrusion Detection System powered by Machine Learning for real-time threat detection and automated response.
+
+> **Demo in 30 seconds:** clone, then `./run_demo.sh`. Opens a dark-themed
+> dashboard at <http://localhost:8501> driven by a built-in synthetic traffic
+> generator (no root, no live capture required).
 
 ## 🎯 Key Features
 
@@ -139,29 +143,40 @@ python scripts/download_models.py
 
 ### Running the System
 
-#### Option 1: Local Development
+#### ⚡ One-shot Demo (recommended)
+
+The repository ships with a synthetic traffic generator so you can run the
+full stack (ML ensemble, rule engine, dashboard) without root or live
+capture.
 
 ```bash
-# Start the packet capture service
-sudo python data_collection/packet_capture.py
+./run_demo.sh
+# Installs deps if missing, trains a small ensemble (~30 s),
+# then opens the dashboard at http://localhost:8501
+```
 
-# Start the ML detection engine
-python models/ensemble_detector.py
+#### Option 1: Local Development (manual)
 
-# Launch the dashboard
+```bash
+# (1) install
+pip install -r requirements.txt
+
+# (2) train a quick ensemble on synthetic traffic
+python scripts/download_models.py        # or: python scripts/train_model.py
+
+# (3) launch the dashboard (uses the simulator by default)
 streamlit run dashboard/streamlit_app.py
+
+# Optional: live capture instead of simulator (needs root):
+sudo python data_collection/packet_capture.py --iface en0
 ```
 
 #### Option 2: Docker Deployment
 
 ```bash
-# Build and run all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Access dashboard at http://localhost:8501
+docker-compose -f deployment/docker-compose.yml up -d
+docker-compose -f deployment/docker-compose.yml logs -f
+# Dashboard at http://localhost:8501
 ```
 
 ## 📁 Project Structure

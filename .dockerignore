@@ -1,0 +1,11 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+.venv
+venv
+.streamlit/secrets.toml
+logs
+data/synthetic
+models/saved

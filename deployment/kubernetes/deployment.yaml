@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nids-ml
+  labels: { app: nids-ml }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: nids-ml }
+  template:
+    metadata:
+      labels: { app: nids-ml }
+    spec:
+      containers:
+        - name: nids
+          image: nids-ml:latest
+          ports:
+            - containerPort: 8501
+          resources:
+            requests: { cpu: "500m", memory: "512Mi" }
+            limits:   { cpu: "2",    memory: "2Gi"   }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nids-ml
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8501
+      targetPort: 8501
+  selector: { app: nids-ml }

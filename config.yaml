@@ -1,0 +1,136 @@
+# =============================================================================
+# Network Intrusion Detection System - Configuration
+# =============================================================================
+
+app:
+  name: "NIDS-ML"
+  version: "1.0.0"
+  log_level: "INFO"
+
+# -----------------------------------------------------------------------------
+# Packet capture (live mode requires root / cap_net_raw)
+# -----------------------------------------------------------------------------
+capture:
+  interface: "en0"          # eth0 on Linux, en0 on macOS
+  filter: "tcp or udp"      # BPF filter
+  snaplen: 65535
+  promiscuous: true
+  timeout_ms: 1000
+
+# -----------------------------------------------------------------------------
+# Demo / simulator settings (used when running without root)
+# -----------------------------------------------------------------------------
+simulator:
+  packets_per_second: 250
+  attack_probability: 0.08   # ~8% of windows contain an attack
+  attacks:
+    - ddos_syn_flood
+    - port_scan
+    - brute_force_ssh
+    - sql_injection
+    - dns_tunneling
+    - data_exfiltration
+    - xss
+    - lateral_movement
+
+# -----------------------------------------------------------------------------
+# Feature engineering
+# -----------------------------------------------------------------------------
+features:
+  window_sizes_seconds: [5, 30, 60]
+  pca_variance: 0.95
+  scaler: "standard"        # standard | minmax | robust
+
+# -----------------------------------------------------------------------------
+# ML model ensemble
+# -----------------------------------------------------------------------------
+model:
+  ensemble_weights:
+    isolation_forest: 0.30
+    random_forest:    0.40
+    lstm:             0.30
+  confidence_threshold: 0.65
+  isolation_forest:
+    n_estimators: 100
+    contamination: 0.1
+    random_state: 42
+  random_forest:
+    n_estimators: 200
+    max_depth: 20
+    class_weight: "balanced"
+    random_state: 42
+  lstm:
+    sequence_length: 10
+    hidden_units: 64
+    epochs: 5
+    batch_size: 64
+
+# -----------------------------------------------------------------------------
+# Rule engine (signature-based)
+# -----------------------------------------------------------------------------
+rules:
+  port_scan:
+    distinct_ports_threshold: 15
+    window_seconds: 10
+  ddos:
+    syn_rate_per_second: 500
+    window_seconds: 5
+  brute_force:
+    failed_attempts_threshold: 10
+    window_seconds: 60
+    target_ports: [22, 21, 3389, 23]
+  dns_tunneling:
+    avg_query_length_threshold: 60
+
+# -----------------------------------------------------------------------------
+# Alerting
+# -----------------------------------------------------------------------------
+alerts:
+  enabled: true
+  channels:
+    email: false
+    slack: false
+    webhook: false
+    console: true
+  email:
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    username: "${SMTP_USER}"
+    password: "${SMTP_PASS}"
+    from_addr: "nids@example.com"
+    to_addrs: ["soc@example.com"]
+  slack:
+    webhook_url: "${SLACK_WEBHOOK}"
+    channel: "#nids-alerts"
+  webhook:
+    url: "https://your-webhook.example.com/ingest"
+  severity_routing:
+    critical: ["email", "slack", "webhook", "console"]
+    high:     ["slack", "webhook", "console"]
+    medium:   ["webhook", "console"]
+    low:      ["console"]
+
+# -----------------------------------------------------------------------------
+# Performance
+# -----------------------------------------------------------------------------
+performance:
+  batch_size: 100
+  buffer_size: 10000
+  num_workers: 4
+
+# -----------------------------------------------------------------------------
+# Persistence
+# -----------------------------------------------------------------------------
+storage:
+  model_dir: "models/saved"
+  log_dir:   "logs"
+  alerts_db: "logs/alerts.db"
+
+# -----------------------------------------------------------------------------
+# Dashboard
+# -----------------------------------------------------------------------------
+dashboard:
+  refresh_seconds: 2
+  max_alerts_displayed: 200
+  max_flow_points: 300
+  theme: "dark"

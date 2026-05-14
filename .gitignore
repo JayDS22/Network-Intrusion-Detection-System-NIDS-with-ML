@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.DS_Store
+
+# Artefacts
+logs/
+data/synthetic/
+models/saved/
+
+# Editor
+.idea/
+.vscode/

@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  nids:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: nids-ml
+    ports:
+      - "8501:8501"
+    volumes:
+      - ../models/saved:/app/models/saved
+      - ../logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  # Optional Postgres alert store (not required for the demo).
+  postgres:
+    image: postgres:16-alpine
+    container_name: nids-postgres
+    environment:
+      POSTGRES_USER:     nids
+      POSTGRES_PASSWORD: nids
+      POSTGRES_DB:       nids
+    volumes:
+      - nids-pg:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  nids-pg:
