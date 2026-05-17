@@ -10,7 +10,7 @@ Network Intrusion Detection System powered by Machine Learning for real-time thr
 > dashboard at <http://localhost:8501> driven by a built-in synthetic traffic
 > generator (no root, no live capture required).
 
-## 🎯 Key Features
+## Key Features
 
 - **Real-time Packet Capture**: Live network traffic analysis using Scapy
 - **ML-Powered Detection**: Ensemble model (Isolation Forest + Random Forest + LSTM)
@@ -22,89 +22,34 @@ Network Intrusion Detection System powered by Machine Learning for real-time thr
 - **Automated Alerting**: Multi-channel notifications (Email, Slack, Webhook)
 - **Docker-Ready**: Full containerization for easy deployment
 
-## 🏗️ System Architecture
+## System Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     NETWORK TRAFFIC SOURCE                       │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   DATA COLLECTION LAYER                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │    Scapy     │  │   Packet     │  │   Feature    │         │
-│  │   Capture    │→ │  Processor   │→ │  Extraction  │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │ (40+ features extracted)
-                          ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                 FEATURE ENGINEERING PIPELINE                     │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │   Sliding    │  │ Statistical  │  │    PCA       │         │
-│  │   Windows    │→ │ Aggregation  │→ │ Reduction    │         │
-│  │  (5s/30s/60s)│  │  & Scaling   │  │  (95% var)   │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   ML DETECTION ENGINE                            │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │  Isolation   │  │    Random    │  │     LSTM     │         │
-│  │   Forest     │  │    Forest    │  │   Sequence   │         │
-│  │  (Anomaly)   │  │(Classification)│ │   Modeling   │         │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘         │
-│         │                  │                  │                  │
-│         └──────────────────┼──────────────────┘                  │
-│                            │                                      │
-│                    ┌───────▼────────┐                           │
-│                    │    Ensemble    │                           │
-│                    │  Voting Logic  │                           │
-│                    └───────┬────────┘                           │
-└────────────────────────────┼──────────────────────────────────────┘
-                             │
-              ┌──────────────┼──────────────┐
-              │              │              │
-              ▼              ▼              ▼
-┌─────────────────┐ ┌─────────────┐ ┌──────────────┐
-│  RULE-BASED     │ │  THREAT     │ │   ALERT &    │
-│  DETECTION      │ │ INTELLIGENCE│ │   RESPONSE   │
-│                 │ │             │ │              │
-│ • Port Scanning │ │ • IP Rep    │ │ • Severity   │
-│ • DDoS Patterns │ │ • Signatures│ │   Routing    │
-│ • SQL Injection │ │ • IOCs      │ │ • Multi-     │
-│ • Brute Force   │ │             │ │   Channel    │
-└────────┬────────┘ └──────┬──────┘ └──────┬───────┘
-         │                 │                │
-         └─────────────────┼────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                  REAL-TIME DASHBOARD                             │
-│  ┌──────────────────────────────────────────────────────┐      │
-│  │ • Live Traffic Visualization                          │      │
-│  │ • Threat Severity Heatmaps                           │      │
-│  │ • Geographic IP Mapping                               │      │
-│  │ • Alert Timeline & Top Talkers                       │      │
-│  │ • Protocol Distribution Charts                        │      │
-│  │ • Performance Metrics (Refresh: 2s)                  │      │
-│  └──────────────────────────────────────────────────────┘      │
-└─────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   MLOPS & PERSISTENCE                            │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │   Drift      │  │  Automated   │  │  PostgreSQL  │         │
-│  │  Detection   │→ │  Retraining  │  │  Alert Log   │         │
-│  │ (KL Diverge) │  │  & Versioning│  │  & Evidence  │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    classDef ingest fill:#1d2a3a,stroke:#58a6ff,stroke-width:2px,color:#e6edf3
+    classDef compute fill:#1f2a23,stroke:#3fb950,stroke-width:2px,color:#e6edf3
+    classDef output fill:#2a2520,stroke:#c9a227,stroke-width:2px,color:#e6edf3
+    classDef ops fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#e6edf3
+
+    S[Network Traffic<br/>Scapy capture · 40+ features]:::ingest
+    F[Feature Engineering<br/>Sliding 5/30/60s · PCA 95% var]:::compute
+    M[ML Ensemble<br/>Isolation Forest · RF · LSTM<br/>+ voting logic]:::compute
+    D[Detection Layer<br/>Rule-based · Threat intel · Alerts]:::compute
+    DASH[Real-time Dashboard<br/>Traffic · heatmaps · geo · timeline]:::output
+    OPS[MLOps<br/>Drift KL · auto-retrain · PG alert log]:::ops
+
+    S --> F --> M --> D --> DASH
+    DASH --> OPS
+    OPS -.->|retrain| M
+
+    click F href "feature_engineering" "Feature pipeline"
+    click M href "models" "ML detection engine"
+    click D href "alerts" "Alert routing"
+    click DASH href "dashboard" "Dashboard"
+    click S href "data_collection" "Packet capture"
 ```
 
-## 📊 Performance Metrics
+## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
@@ -115,7 +60,7 @@ Network Intrusion Detection System powered by Machine Learning for real-time thr
 | AUC Score | 0.91 |
 | Dashboard Response | <200ms |
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -143,7 +88,7 @@ python scripts/download_models.py
 
 ### Running the System
 
-#### ⚡ One-shot Demo (recommended)
+#### One-shot Demo (recommended)
 
 The repository ships with a synthetic traffic generator so you can run the
 full stack (ML ensemble, rule engine, dashboard) without root or live
@@ -179,7 +124,7 @@ docker-compose -f deployment/docker-compose.yml logs -f
 # Dashboard at http://localhost:8501
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 network-ids/
@@ -225,7 +170,7 @@ network-ids/
 └── README.md                       # This file
 ```
 
-## 🔧 Configuration
+## Configuration
 
 Edit `config.yaml` to customize:
 
@@ -248,7 +193,7 @@ performance:
   buffer_size: 10000
 ```
 
-## 🎯 Detected Attack Types
+## Detected Attack Types
 
 1. **DDoS Attacks** (SYN flood, UDP flood, HTTP flood)
 2. **Port Scanning** (TCP connect, SYN scan, FIN scan)
@@ -266,7 +211,7 @@ performance:
 14. **Credential Stuffing**
 15. **API Abuse**
 
-## 📈 Model Training
+## Model Training
 
 Train on custom datasets:
 
@@ -281,7 +226,7 @@ python scripts/train_model.py --dataset data/processed/train.csv --epochs 50
 python scripts/evaluate.py --model models/saved/ensemble_v1.pkl --testset data/processed/test.csv
 ```
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run unit tests
@@ -294,7 +239,7 @@ pytest tests/integration_tests.py -v
 python tests/performance_tests.py --packets 1000000
 ```
 
-## 🔐 Security Considerations
+## Security Considerations
 
 - Run packet capture with minimal privileges (use capabilities instead of root)
 - Encrypt alert communications (TLS/SSL)
@@ -302,26 +247,26 @@ python tests/performance_tests.py --packets 1000000
 - Implement rate limiting on APIs
 - Regular security audits and updates
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
-## 📚 References
+## References
 
 - NSL-KDD Dataset: https://www.unb.ca/cic/datasets/nsl.html
 - CICIDS2017 Dataset: https://www.unb.ca/cic/datasets/ids-2017.html
 - Scapy Documentation: https://scapy.net/
 - Scikit-learn: https://scikit-learn.org/
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Canadian Institute for Cybersecurity for datasets
 - Open source community for tools and libraries
 
 ---
 
-**⚠️ Disclaimer**: This tool is for authorized security testing only. Unauthorized network monitoring may be illegal in your jurisdiction.
+** Disclaimer**: This tool is for authorized security testing only. Unauthorized network monitoring may be illegal in your jurisdiction.
